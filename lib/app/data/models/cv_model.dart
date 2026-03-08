@@ -31,6 +31,18 @@ class CVModel extends HiveObject {
   @HiveField(8)
   List<String> skills;
 
+  @HiveField(9)
+  List<Project> projects;
+
+  @HiveField(10)
+  List<SocialLink> socialLinks;
+
+  @HiveField(11)
+  List<String> certifications;
+
+  @HiveField(12)
+  List<String> languages;
+
   CVModel({
     required this.id,
     this.fullName = '',
@@ -41,6 +53,10 @@ class CVModel extends HiveObject {
     this.educationList = const [],
     this.experienceList = const [],
     this.skills = const [],
+    this.projects = const [],
+    this.socialLinks = const [],
+    this.certifications = const [],
+    this.languages = const [],
   });
 }
 
@@ -74,3 +90,32 @@ class Experience {
 
   Experience({this.company = '', this.role = '', this.duration = '', this.description = ''});
 }
+
+@HiveType(typeId: 3)
+class Project {
+  @HiveField(0)
+  String name;
+  
+  @HiveField(1)
+  String description;
+  
+  @HiveField(2)
+  String techStack;
+  
+  @HiveField(3)
+  String link;
+
+  Project({this.name = '', this.description = '', this.techStack = '', this.link = ''});
+}
+
+@HiveType(typeId: 4)
+class SocialLink {
+  @HiveField(0)
+  String name; // e.g., GitHub, LinkedIn
+  
+  @HiveField(1)
+  String url;
+
+  SocialLink({this.name = '', this.url = ''});
+}
+

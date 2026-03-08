@@ -9,13 +9,19 @@ class EditorController extends GetxController {
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
+  final addressController = TextEditingController();
   final summaryController = TextEditingController();
 
   final educationList = <Education>[].obs;
   final experienceList = <Experience>[].obs;
   final skillsList = <String>[].obs;
+  final projectsList = <Project>[].obs;
+  final socialLinksList = <SocialLink>[].obs;
+  final certificationsList = <String>[].obs;
+  final languagesList = <String>[].obs;
 
   final currentStep = 0.obs;
+  final totalSteps = 9; // Info, Edu, Exp, Skill, Project, Links, Certs, Lang, Finish
   final pageController = PageController();
 
   final selectedTemplate = TemplateType.modern.obs; // Default to Modern
@@ -29,7 +35,7 @@ class EditorController extends GetxController {
   }
 
   void nextStep() {
-    if (currentStep.value < 4) {
+    if (currentStep.value < totalSteps - 1) {
       currentStep.value++;
       pageController.animateToPage(currentStep.value, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
@@ -44,27 +50,6 @@ class EditorController extends GetxController {
     }
   }
 
-  void addEducation() {
-    educationList.add(Education(
-      institution: 'University/School', 
-      degree: 'Degree', 
-      year: 'Year'
-    ));
-  }
-
-  void addExperience() {
-    experienceList.add(Experience(
-      company: 'Company',
-      role: 'Role',
-      duration: 'Duration',
-      description: 'Description'
-    ));
-  }
-
-  void addSkill() {
-    skillsList.add('New Skill');
-  }
-
   Future<void> saveAndGeneratePDF() async {
     // Show Ad
     Get.find<AdService>().showInterstitial();
@@ -74,16 +59,21 @@ class EditorController extends GetxController {
       fullName: fullNameController.text,
       email: emailController.text,
       phone: phoneController.text,
+      address: addressController.text,
       summary: summaryController.text,
       educationList: educationList.toList(),
       experienceList: experienceList.toList(),
       skills: skillsList.toList(),
+      projects: projectsList.toList(),
+      socialLinks: socialLinksList.toList(),
+      certifications: certificationsList.toList(),
+      languages: languagesList.toList(),
     );
     
-    // In a real app, save to Hive here.
     final box = Hive.box<CVModel>('cvs');
     box.add(cv);
 
     await _pdfService.generatePdf(cv, template: selectedTemplate.value);
   }
 }
+

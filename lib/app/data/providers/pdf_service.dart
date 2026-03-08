@@ -4,7 +4,20 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/cv_model.dart';
 
-enum TemplateType { classic, modern, creative, professionalGray, minimalModern, technicalCol }
+enum TemplateType { 
+  classic, 
+  modern, 
+  creative, 
+  professionalGray, 
+  minimalModern, 
+  technicalCol,
+  atsStandard,
+  googleStyle,
+  harvardStyle,
+  developerOne,
+  executivePro,
+  compactGrid
+}
 
 class PdfService {
   Future<Uint8List> generatePdf(CVModel cv, {TemplateType template = TemplateType.modern}) async {
@@ -30,18 +43,182 @@ class PdfService {
               return _buildMinimalModernTemplate(cv);
             case TemplateType.technicalCol:
               return _buildTechnicalColTemplate(cv);
-            // Default case removed as all cases are covered, preventing unreachable code warning.
+            case TemplateType.atsStandard:
+            case TemplateType.googleStyle:
+            case TemplateType.harvardStyle:
+              return _buildAtsFriendlyTemplate(cv, template);
+            case TemplateType.developerOne:
+              return _buildDeveloperTemplate(cv);
+            case TemplateType.executivePro:
+              return _buildExecutiveTemplate(cv);
+            case TemplateType.compactGrid:
+              return _buildCompactGridTemplate(cv);
           }
         },
       ),
     );
 
     await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
+      onLayout: (PdfPageFormat format) async => await pdf.save(),
     );
     
-    return pdf.save();
+    return await pdf.save();
   }
+
+  // --- ATS / Google / Harvard Template ---
+  pw.Widget _buildAtsFriendlyTemplate(CVModel cv, TemplateType type) {
+    final titleStyle = pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold);
+    final sectionStyle = pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900);
+    
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Center(child: pw.Text(cv.fullName.toUpperCase(), style: titleStyle)),
+        pw.SizedBox(height: 5),
+        pw.Center(child: pw.Text('${cv.email} | ${cv.phone} | ${cv.address}', style: pw.TextStyle(fontSize: 10))),
+        if (cv.socialLinks.isNotEmpty)
+          pw.Center(child: pw.Text(cv.socialLinks.map((l) => '${l.name}: ${l.url}').join(' | '), style: pw.TextStyle(fontSize: 9))),
+        
+        pw.Divider(thickness: 1),
+        
+        if (cv.summary.isNotEmpty) ...[
+          pw.Text('PROFESSIONAL SUMMARY', style: sectionStyle),
+          pw.SizedBox(height: 5),
+          pw.Text(cv.summary, style: const pw.TextStyle(fontSize: 10)),
+          pw.SizedBox(height: 10),
+        ],
+
+        if (cv.experienceList.isNotEmpty) ...[
+          pw.Text('EXPERIENCE', style: sectionStyle),
+          pw.SizedBox(height: 5),
+          ...cv.experienceList.map((e) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text(e.company, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                  pw.Text(e.duration, style: const pw.TextStyle(fontSize: 10)),
+                ],
+              ),
+              pw.Text(e.role, style: pw.TextStyle(fontStyle: pw.FontStyle.italic, fontSize: 10)),
+              pw.Bullet(text: e.description, style: const pw.TextStyle(fontSize: 9)),
+              pw.SizedBox(height: 5),
+            ],
+          )),
+          pw.SizedBox(height: 10),
+        ],
+
+        if (cv.projects.isNotEmpty) ...[
+          pw.Text('PROJECTS', style: sectionStyle),
+          pw.SizedBox(height: 5),
+          ...cv.projects.map((p) => pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Row(
+                children: [
+                  pw.Text(p.name, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                  if (p.link.isNotEmpty) pw.Text(' | ${p.link}', style: pw.TextStyle(fontSize: 9, color: PdfColors.blue)),
+                ],
+              ),
+              pw.Text('Stack: ${p.techStack}', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+              pw.Text(p.description, style: const pw.TextStyle(fontSize: 9)),
+              pw.SizedBox(height: 5),
+            ],
+          )),
+          pw.SizedBox(height: 10),
+        ],
+
+        if (cv.skills.isNotEmpty) ...[
+          pw.Text('SKILLS', style: sectionStyle),
+          pw.SizedBox(height: 5),
+          pw.Text(cv.skills.join(', '), style: const pw.TextStyle(fontSize: 10)),
+          pw.SizedBox(height: 10),
+        ],
+
+        if (cv.educationList.isNotEmpty) ...[
+          pw.Text('EDUCATION', style: sectionStyle),
+          pw.SizedBox(height: 5),
+          ...cv.educationList.map((e) => pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Text('${e.institution} - ${e.degree}', style: const pw.TextStyle(fontSize: 10)),
+              pw.Text(e.year, style: const pw.TextStyle(fontSize: 10)),
+            ],
+          )),
+        ]
+      ],
+    );
+  }
+
+  // --- Developer Column Template ---
+  pw.Widget _buildDeveloperTemplate(CVModel cv) {
+    final accent = PdfColor.fromHex('#1a237e');
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Expanded(
+          flex: 2,
+          child: pw.Container(
+            color: PdfColors.grey100,
+            padding: const pw.EdgeInsets.all(15),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('LINKS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: accent)),
+                ...cv.socialLinks.map((l) => pw.Text('${l.name}\n${l.url}', style: const pw.TextStyle(fontSize: 8))),
+                pw.SizedBox(height: 15),
+                pw.Text('SKILLS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: accent)),
+                ...cv.skills.map((s) => pw.Bullet(text: s, style: const pw.TextStyle(fontSize: 9))),
+                pw.SizedBox(height: 15),
+                if (cv.languages.isNotEmpty) ...[
+                  pw.Text('LANGUAGES', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: accent)),
+                  ...cv.languages.map((l) => pw.Text(l, style: const pw.TextStyle(fontSize: 9))),
+                ],
+              ],
+            ),
+          ),
+        ),
+        pw.Expanded(
+          flex: 4,
+          child: pw.Container(
+            padding: const pw.EdgeInsets.all(15),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(cv.fullName, style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: accent)),
+                pw.Text(cv.summary, style: const pw.TextStyle(fontSize: 10)),
+                pw.Divider(color: accent),
+                pw.Text('RECENT PROJECTS', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: accent)),
+                ...cv.projects.map((p) => pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(p.name, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                    pw.Text(p.description, style: const pw.TextStyle(fontSize: 9)),
+                    pw.SizedBox(height: 5),
+                  ],
+                )),
+                pw.SizedBox(height: 15),
+                pw.Text('WORK EXPERIENCE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: accent)),
+                ...cv.experienceList.map((e) => pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('${e.role} @ ${e.company}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10)),
+                    pw.Text(e.duration, style: const pw.TextStyle(fontSize: 8)),
+                    pw.SizedBox(height: 5),
+                  ],
+                )),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Fallback for remaining templates to avoid switch errors while building
+  pw.Widget _buildExecutiveTemplate(CVModel cv) => _buildClassicTemplate(cv);
+  pw.Widget _buildCompactGridTemplate(CVModel cv) => _buildClassicTemplate(cv);
 
   // 1. Classic Template
   pw.Widget _buildClassicTemplate(CVModel cv) {

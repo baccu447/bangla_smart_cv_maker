@@ -31,6 +31,10 @@ class EditorView extends GetView<EditorController> {
                 _buildEducationStep(context),
                 _buildExperienceStep(context),
                 _buildSkillsStep(context),
+                _buildProjectsStep(context),
+                _buildLinksStep(context),
+                _buildCertificationsStep(context),
+                _buildLanguagesStep(context),
                 _buildTemplateStep(context),
               ],
             )),
@@ -42,34 +46,37 @@ class EditorView extends GetView<EditorController> {
   }
 
   Widget _buildCustomStepper(BuildContext context) {
-    final steps = ["Info", "Edu", "Exp", "Skill", "Finish"];
-    return Container(
+    final steps = ["Info", "Edu", "Exp", "Skill", "Project", "Links", "Certs", "Lang", "Finish"];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       padding: EdgeInsets.symmetric(vertical: 16),
-      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(steps.length, (index) {
           bool isActive = controller.currentStep.value >= index;
           bool isCurrent = controller.currentStep.value == index;
-          return Column(
-            children: [
-              AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                width: 30, height: 30,
-                decoration: BoxDecoration(
-                  color: isActive ? Theme.of(context).primaryColor : Colors.grey.shade200,
-                  shape: BoxShape.circle,
-                  border: isCurrent ? Border.all(color: Theme.of(context).primaryColor, width: 2) : null,
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              children: [
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 300),
+                  width: 30, height: 30,
+                  decoration: BoxDecoration(
+                    color: isActive ? Theme.of(context).primaryColor : Colors.grey.shade200,
+                    shape: BoxShape.circle,
+                    border: isCurrent ? Border.all(color: Theme.of(context).primaryColor, width: 2) : null,
+                  ),
+                  child: Center(
+                    child: isActive 
+                      ? Icon(Icons.check, size: 16, color: Colors.white)
+                      : Text('${index + 1}', style: TextStyle(color: Colors.grey.shade600)),
+                  ),
                 ),
-                child: Center(
-                  child: isActive 
-                    ? Icon(Icons.check, size: 16, color: Colors.white)
-                    : Text('${index + 1}', style: TextStyle(color: Colors.grey.shade600)),
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(steps[index], style: TextStyle(fontSize: 10, fontWeight: isActive ? FontWeight.bold : FontWeight.normal, color: isActive ? Theme.of(context).primaryColor : Colors.grey)),
-            ],
+                SizedBox(height: 4),
+                Text(steps[index], style: TextStyle(fontSize: 10, fontWeight: isActive ? FontWeight.bold : FontWeight.normal, color: isActive ? Theme.of(context).primaryColor : Colors.grey)),
+              ],
+            ),
           );
         }),
       ),
@@ -100,8 +107,8 @@ class EditorView extends GetView<EditorController> {
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            icon: Icon(controller.currentStep.value == 4 ? Icons.download : Icons.arrow_forward),
-            label: Text(controller.currentStep.value == 4 ? "Generate PDF" : "Next"),
+            icon: Icon(controller.currentStep.value == controller.totalSteps - 1 ? Icons.download : Icons.arrow_forward),
+            label: Text(controller.currentStep.value == controller.totalSteps - 1 ? "Generate PDF" : "Next"),
           )),
         ],
       ),
@@ -125,11 +132,14 @@ class EditorView extends GetView<EditorController> {
           SizedBox(height: 15),
           _buildTextField(controller.phoneController, "Phone Number", Icons.phone, type: TextInputType.phone),
           SizedBox(height: 15),
+          _buildTextField(controller.addressController, "Location/Address", Icons.location_on),
+          SizedBox(height: 15),
           _buildTextField(controller.summaryController, "Professional Summary", Icons.description, maxLines: 4),
         ],
       ),
     );
   }
+
 
   // Step 2: Education
   Widget _buildEducationStep(BuildContext context) {
@@ -190,18 +200,20 @@ class EditorView extends GetView<EditorController> {
         children: [
           Text("Skills", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 5),
-          Text("List your top skills (comma separated).", style: TextStyle(color: Colors.grey)),
+          Text("List your top technical skills.", style: TextStyle(color: Colors.grey)),
           SizedBox(height: 20),
           
           TextField(
+            onSubmitted: (val) {
+              if (val.isNotEmpty) {
+                controller.skillsList.add(val.trim());
+              }
+            },
             decoration: InputDecoration(
-              labelText: "E.g. Flutter, Laravel, Teamwork",
+              labelText: "Add skill (e.g. Flutter) and press Enter",
               prefixIcon: Icon(Icons.stars),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onChanged: (val) {
-               controller.skillsList.assignAll(val.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList());
-            },
           ),
           SizedBox(height: 20),
           Obx(() => Wrap(
@@ -218,6 +230,182 @@ class EditorView extends GetView<EditorController> {
       ),
     );
   }
+
+  // Step 5: Projects
+  Widget _buildProjectsStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(context, "Projects", "Showcase your best work", () => _showAddProjectDialog(context)),
+          SizedBox(height: 20),
+          Obx(() => controller.projectsList.isEmpty 
+            ? _buildEmptyState("No projects added yet.")
+            : Column(
+                children: controller.projectsList.map((p) => _buildItemCard(
+                  context, 
+                  title: p.name, 
+                  subtitle: p.techStack, 
+                  onDelete: () => controller.projectsList.remove(p)
+                )).toList(),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Step 6: Social Links
+  Widget _buildLinksStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(context, "Social Links", "GitHub, LinkedIn, Portfolio", () => _showAddLinkDialog(context)),
+          SizedBox(height: 20),
+          Obx(() => controller.socialLinksList.isEmpty 
+            ? _buildEmptyState("No links added yet.")
+            : Column(
+                children: controller.socialLinksList.map((l) => _buildItemCard(
+                  context, 
+                  title: l.name, 
+                  subtitle: l.url, 
+                  onDelete: () => controller.socialLinksList.remove(l)
+                )).toList(),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Step 7: Certifications
+  Widget _buildCertificationsStep(BuildContext context) {
+    return _buildTagStep(context, 
+      title: "Certifications", 
+      subtitle: "Add your professional certifications", 
+      hint: "e.g. Google Associate Android Developer", 
+      list: controller.certificationsList
+    );
+  }
+
+  // Step 8: Languages
+  Widget _buildLanguagesStep(BuildContext context) {
+    return _buildTagStep(context, 
+      title: "Languages", 
+      subtitle: "Languages you speak/write", 
+      hint: "e.g. English (Fluent)", 
+      list: controller.languagesList
+    );
+  }
+
+  // Helper for Certifications and Languages
+  Widget _buildTagStep(BuildContext context, {required String title, required String subtitle, required String hint, required RxList<String> list}) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          Text(subtitle, style: TextStyle(color: Colors.grey)),
+          SizedBox(height: 20),
+          TextField(
+            onSubmitted: (val) {
+              if (val.isNotEmpty) {
+                list.add(val.trim());
+              }
+            },
+            decoration: InputDecoration(
+              labelText: "$hint (Press Enter)",
+              prefixIcon: Icon(Icons.add_task),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          SizedBox(height: 20),
+          Obx(() => Column(
+            children: list.map((item) => Card(
+              margin: EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                title: Text(item),
+                trailing: IconButton(icon: Icon(Icons.delete, color: Colors.red), onPressed: () => list.remove(item)),
+              ),
+            )).toList(),
+          )),
+        ],
+      ),
+    );
+  }
+
+  // Dialogs for Projects and Links
+  void _showAddProjectDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final stackCtrl = TextEditingController();
+    final linkCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
+    
+    Get.defaultDialog(
+      title: 'Add Project',
+      content: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildTextField(nameCtrl, "Project Name", Icons.folder),
+            SizedBox(height: 10),
+            _buildTextField(stackCtrl, "Tech Stack (e.g. Flutter, Firebase)", Icons.code),
+            SizedBox(height: 10),
+            _buildTextField(linkCtrl, "Project Link (Optional)", Icons.link),
+            SizedBox(height: 10),
+            _buildTextField(descCtrl, "Description", Icons.description, maxLines: 3),
+          ],
+        ),
+      ),
+      confirm: ElevatedButton(
+        onPressed: () {
+          if (nameCtrl.text.isNotEmpty) {
+            controller.projectsList.add(Project(
+              name: nameCtrl.text,
+              techStack: stackCtrl.text,
+              link: linkCtrl.text,
+              description: descCtrl.text,
+            ));
+            Get.back();
+          }
+        },
+        child: Text("Add"),
+      ),
+    );
+  }
+
+  void _showAddLinkDialog(BuildContext context) {
+    final nameCtrl = TextEditingController();
+    final urlCtrl = TextEditingController();
+    
+    Get.defaultDialog(
+      title: 'Add Social Link',
+      content: Column(
+        children: [
+          _buildTextField(nameCtrl, "Platform (e.g. GitHub)", Icons.label),
+          SizedBox(height: 10),
+          _buildTextField(urlCtrl, "URL", Icons.link),
+        ],
+      ),
+      confirm: ElevatedButton(
+        onPressed: () {
+          if (nameCtrl.text.isNotEmpty) {
+            controller.socialLinksList.add(SocialLink(
+              name: nameCtrl.text,
+              url: urlCtrl.text,
+            ));
+            Get.back();
+          }
+        },
+        child: Text("Add"),
+      ),
+    );
+  }
+
 
   // Step 5: Template & Preview
   Widget _buildTemplateStep(BuildContext context) {
