@@ -52,11 +52,11 @@ class _HomeViewState extends State<HomeView> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(height: 20),
-                    // Hero Animation or Logo
+                    // Animated Logo
                     SizedBox(
-                      height: 250,
+                      height: 220,
                       child: Lottie.network(
-                        'https://assets9.lottiefiles.com/packages/lf20_u4jjb9bd.json', // Placeholder Resume Animation
+                        'https://assets9.lottiefiles.com/packages/lf20_u4jjb9bd.json', // CV Animation
                         errorBuilder: (context, error, stackTrace) => 
                             Icon(Icons.description_outlined, size: 100, color: Theme.of(context).primaryColor),
                       ),
@@ -65,56 +65,60 @@ class _HomeViewState extends State<HomeView> {
                     SizedBox(height: 30),
                     
                     Text(
-                      'Build Your Career',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
+                      'Bangla Smart CV Maker',
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 26, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ).animate().slideY(begin: 0.3, end: 0, delay: 200.ms).fadeIn(),
                     
                     SizedBox(height: 10),
                     
                     Text(
-                      'Create a professional CV in minutes with our smart templates.',
+                      'চাকরির জন্য প্রফেশনাল সিভি তৈরি করুন ১ মিনিটে!',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 16),
                       textAlign: TextAlign.center,
                     ).animate().slideY(begin: 0.3, end: 0, delay: 300.ms).fadeIn(),
                     
-                    SizedBox(height: 50),
-                    
-                    // Action Buttons
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () => Get.toNamed('/editor'),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 8,
-                          backgroundColor: Theme.of(context).primaryColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    SizedBox(height: 40),
+
+                    // Feature Grid
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 1.1,
+                      children: [
+                        _buildFeatureCard(
+                          context, 
+                          icon: Icons.edit_document, 
+                          title: 'Create CV', 
+                          color: Color(0xFF6C63FF),
+                          onTap: () => Get.toNamed('/editor'),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.edit_document),
-                            SizedBox(width: 10),
-                            Text('Create New CV', style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600)),
-                          ],
+                        _buildFeatureCard(
+                          context, 
+                          icon: Icons.folder_open, 
+                          title: 'My CVs', 
+                          color: Color(0xFFFF6584),
+                          onTap: () => Get.snackbar("Coming Soon", "Saved CVs feature is under development!"),
                         ),
-                      ),
+                        _buildFeatureCard(
+                          context, 
+                          icon: Icons.lightbulb_outline, 
+                          title: 'Tips', 
+                          color: Color(0xFF4DB6AC),
+                          onTap: () => Get.snackbar("Tips", "Use professional summary and clear fonts."),
+                        ),
+                        _buildFeatureCard(
+                          context, 
+                          icon: Icons.settings, 
+                          title: 'Settings', 
+                          color: Color(0xFFFFD54F),
+                          onTap: () {},
+                        ),
+                      ],
                     ).animate().slideY(begin: 0.5, end: 0, delay: 400.ms).fadeIn(),
-
-                    SizedBox(height: 20),
-
-                    OutlinedButton(
-                      onPressed: () {
-                        Get.snackbar("Coming Soon", "Saved CVs feature is under development!");
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                        side: BorderSide(color: Theme.of(context).primaryColor),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: Text('My Saved CVs', style: TextStyle(color: Theme.of(context).primaryColor)),
-                    ).animate().slideY(begin: 0.5, end: 0, delay: 500.ms).fadeIn(),
                   ],
                 ),
               ),
@@ -127,6 +131,36 @@ class _HomeViewState extends State<HomeView> {
                 height: _bannerAd!.size.height.toDouble(),
                 child: AdWidget(ad: _bannerAd!),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context, {required IconData icon, required String title, required Color color, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: Offset(0, 4)),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 32, color: color),
+            ),
+            SizedBox(height: 12),
+            Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
           ],
         ),
       ),
