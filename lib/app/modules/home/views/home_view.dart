@@ -6,6 +6,8 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class HomeView extends StatefulWidget {
+  const HomeView({super.key});
+
   @override
   _HomeViewState createState() => _HomeViewState();
 }
@@ -51,7 +53,7 @@ class _HomeViewState extends State<HomeView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     // Animated Logo
                     SizedBox(
                       height: 220,
@@ -62,7 +64,7 @@ class _HomeViewState extends State<HomeView> {
                       ),
                     ).animate().fadeIn(duration: 600.ms).scale(),
                     
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     
                     Text(
                       'Bangla Smart CV Maker',
@@ -70,7 +72,7 @@ class _HomeViewState extends State<HomeView> {
                       textAlign: TextAlign.center,
                     ).animate().slideY(begin: 0.3, end: 0, delay: 200.ms).fadeIn(),
                     
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     
                     Text(
                       'চাকরির জন্য প্রফেশনাল সিভি তৈরি করুন ১ মিনিটে!',
@@ -78,12 +80,12 @@ class _HomeViewState extends State<HomeView> {
                       textAlign: TextAlign.center,
                     ).animate().slideY(begin: 0.3, end: 0, delay: 300.ms).fadeIn(),
                     
-                    SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
                     // Feature Grid
                     GridView.count(
                       shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       crossAxisCount: 2,
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
@@ -91,30 +93,31 @@ class _HomeViewState extends State<HomeView> {
                       children: [
                         _buildFeatureCard(
                           context, 
+                          key: const Key('create_cv_button'),
                           icon: Icons.edit_document, 
                           title: 'Create CV', 
-                          color: Color(0xFF6C63FF),
+                          color: const Color(0xFF6C63FF),
                           onTap: () => Get.toNamed('/editor'),
                         ),
                         _buildFeatureCard(
                           context, 
                           icon: Icons.folder_open, 
                           title: 'My CVs', 
-                          color: Color(0xFFFF6584),
+                          color: const Color(0xFFFF6584),
                           onTap: () => Get.snackbar("Coming Soon", "Saved CVs feature is under development!"),
                         ),
                         _buildFeatureCard(
                           context, 
                           icon: Icons.lightbulb_outline, 
                           title: 'Tips', 
-                          color: Color(0xFF4DB6AC),
+                          color: const Color(0xFF4DB6AC),
                           onTap: () => Get.snackbar("Tips", "Use professional summary and clear fonts."),
                         ),
                         _buildFeatureCard(
                           context, 
                           icon: Icons.settings, 
                           title: 'Settings', 
-                          color: Color(0xFFFFD54F),
+                          color: const Color(0xFFFFD54F),
                           onTap: () {},
                         ),
                       ],
@@ -137,29 +140,30 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildFeatureCard(BuildContext context, {required IconData icon, required String title, required Color color, required VoidCallback onTap}) {
+  Widget _buildFeatureCard(BuildContext context, {Key? key, required IconData icon, required String title, required Color color, required VoidCallback onTap}) {
     return GestureDetector(
+      key: key,
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, size: 32, color: color),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(title, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
           ],
         ),

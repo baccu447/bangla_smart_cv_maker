@@ -4,7 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'app/data/models/cv_model.dart';
 import 'app/modules/home/views/home_view.dart';
 import 'app/modules/editor/views/editor_view.dart';
-import 'app/modules/editor/controllers/editor_controller.dart';
+import 'app/modules/editor/bindings/editor_binding.dart';
 import 'app/data/services/ad_service.dart';
 import 'core/theme/app_theme.dart';
 
@@ -31,10 +31,8 @@ void main() async {
         GetPage(name: '/', page: () => HomeView()),
         GetPage(
           name: '/editor', 
-          page: () => EditorView(),
-          binding: BindingsBuilder(() {
-            Get.put(EditorController());
-          }),
+          page: () => const EditorView(),
+          binding: EditorBinding(),
         ),
       ],
     ),
