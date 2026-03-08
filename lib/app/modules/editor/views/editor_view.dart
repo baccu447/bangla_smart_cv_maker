@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/editor_controller.dart';
 import '../../../data/models/cv_model.dart';
-import '../../../data/providers/pdf_service.dart'; // Import TemplateType
+import '../../../data/providers/pdf_service.dart';
 
 class EditorView extends GetView<EditorController> {
   @override
@@ -12,7 +12,7 @@ class EditorView extends GetView<EditorController> {
       body: Obx(() => Stepper(
         currentStep: controller.currentStep.value,
         onStepContinue: () {
-          if (controller.currentStep.value < 3) { // Increased step count
+          if (controller.currentStep.value < 3) {
             controller.currentStep.value++;
           } else {
             controller.saveAndGeneratePDF();
@@ -92,112 +92,6 @@ class EditorView extends GetView<EditorController> {
                     }
                   },
                 )),
-                SizedBox(height: 20),
-                Text('Ready to generate PDF?'),
-              ],
-            ),
-          ),
-        ],
-      )),
-    );
-  }
-
-  Widget _buildSectionHeader(String title, VoidCallback onAdd) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        IconButton(icon: Icon(Icons.add_circle), onPressed: onAdd),
-      ],
-    );
-  }
-
-  void _showAddEducationDialog(BuildContext context) {
-    final institutionController = TextEditingController();
-    final degreeController = TextEditingController();
-    final yearController = TextEditingController();
-    
-    Get.defaultDialog(
-      title: 'Add Education',
-      content: Column(
-        children: [
-          TextField(controller: institutionController, decoration: InputDecoration(labelText: 'Institution')),
-          TextField(controller: degreeController, decoration: InputDecoration(labelText: 'Degree')),
-          TextField(controller: yearController, decoration: InputDecoration(labelText: 'Year')),
-        ],
-      ),
-      textConfirm: 'Add',
-      onConfirm: () {
-        controller.educationList.add(Education(
-          institution: institutionController.text,
-          degree: degreeController.text,
-          year: yearController.text,
-        ));
-        Get.back();
-      },
-    );
-  }
-
-  void _showAddExperienceDialog(BuildContext context) {
-    final companyController = TextEditingController();
-    final roleController = TextEditingController();
-    final durationController = TextEditingController();
-    
-    Get.defaultDialog(
-      title: 'Add Experience',
-      content: Column(
-        children: [
-          TextField(controller: companyController, decoration: InputDecoration(labelText: 'Company')),
-          TextField(controller: roleController, decoration: InputDecoration(labelText: 'Role')),
-          TextField(controller: durationController, decoration: InputDecoration(labelText: 'Duration')),
-        ],
-      ),
-      textConfirm: 'Add',
-      onConfirm: () {
-        controller.experienceList.add(Experience(
-          company: companyController.text,
-          role: roleController.text,
-          duration: durationController.text,
-        ));
-        Get.back();
-      },
-    );
-  }
-}
-          Step(
-            title: Text('Education & Experience'),
-            content: Column(
-              children: [
-                _buildSectionHeader('Education', () => _showAddEducationDialog(context)),
-                Obx(() => Column(
-                  children: controller.educationList.map((e) => ListTile(
-                    title: Text(e.institution),
-                    subtitle: Text('${e.degree} - ${e.year}'),
-                    trailing: IconButton(icon: Icon(Icons.delete), onPressed: () => controller.educationList.remove(e)),
-                  )).toList(),
-                )),
-                Divider(),
-                _buildSectionHeader('Experience', () => _showAddExperienceDialog(context)),
-                Obx(() => Column(
-                  children: controller.experienceList.map((e) => ListTile(
-                    title: Text(e.company),
-                    subtitle: Text(e.role),
-                    trailing: IconButton(icon: Icon(Icons.delete), onPressed: () => controller.experienceList.remove(e)),
-                  )).toList(),
-                )),
-              ],
-            ),
-          ),
-          Step(
-            title: Text('Skills & Finalize'),
-            content: Column(
-              children: [
-                TextField(
-                  decoration: InputDecoration(labelText: 'Skills (comma separated)'),
-                  onChanged: (val) {
-                    controller.skillsList.assignAll(val.split(',').map((e) => e.trim()).toList());
-                  },
-                ),
                 SizedBox(height: 20),
                 Text('Ready to generate PDF?'),
               ],
