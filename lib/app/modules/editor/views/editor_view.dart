@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/editor_controller.dart';
-import '../../../data/models/cv_model.dart'; // Fixed import path
+import '../../../data/models/cv_model.dart';
+import '../../../data/providers/pdf_service.dart'; // Import TemplateType
 
 class EditorView extends GetView<EditorController> {
   @override
@@ -11,7 +12,7 @@ class EditorView extends GetView<EditorController> {
       body: Obx(() => Stepper(
         currentStep: controller.currentStep.value,
         onStepContinue: () {
-          if (controller.currentStep.value < 2) {
+          if (controller.currentStep.value < 3) { // Increased step count
             controller.currentStep.value++;
           } else {
             controller.saveAndGeneratePDF();
@@ -59,7 +60,7 @@ class EditorView extends GetView<EditorController> {
             ),
           ),
           Step(
-            title: Text('Skills & Finalize'),
+            title: Text('Skills'),
             content: Column(
               children: [
                 TextField(
@@ -68,6 +69,29 @@ class EditorView extends GetView<EditorController> {
                     controller.skillsList.assignAll(val.split(',').map((e) => e.trim()).toList());
                   },
                 ),
+              ],
+            ),
+          ),
+          Step(
+            title: Text('Template & Finalize'),
+            content: Column(
+              children: [
+                Text('Select a Template:', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 10),
+                Obx(() => DropdownButton<TemplateType>(
+                  value: controller.selectedTemplate.value,
+                  items: TemplateType.values.map((TemplateType type) {
+                    return DropdownMenuItem<TemplateType>(
+                      value: type,
+                      child: Text(type.toString().split('.').last.toUpperCase()),
+                    );
+                  }).toList(),
+                  onChanged: (TemplateType? newValue) {
+                    if (newValue != null) {
+                      controller.selectedTemplate.value = newValue;
+                    }
+                  },
+                )),
                 SizedBox(height: 20),
                 Text('Ready to generate PDF?'),
               ],

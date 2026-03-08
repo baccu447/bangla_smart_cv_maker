@@ -16,6 +16,7 @@ class EditorController extends GetxController {
   final skillsList = <String>[].obs;
 
   final currentStep = 0.obs;
+  final selectedTemplate = TemplateType.modern.obs; // Default to Modern
 
   final PdfService _pdfService = PdfService();
 
@@ -65,6 +66,6 @@ class EditorController extends GetxController {
     final box = Hive.box<CVModel>('cvs');
     box.add(cv);
 
-    await _pdfService.generatePdf(cv);
+    await _pdfService.generatePdf(cv, template: selectedTemplate.value);
   }
 }
