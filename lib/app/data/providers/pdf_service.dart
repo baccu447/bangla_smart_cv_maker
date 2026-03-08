@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/cv_model.dart';
 
-enum TemplateType { classic, modern, creative, professional_gray, minimal_modern }
+enum TemplateType { classic, modern, creative, professional_gray, minimal_modern, technical_col }
 
 class PdfService {
   Future<Uint8List> generatePdf(CVModel cv, {TemplateType template = TemplateType.modern}) async {
@@ -28,6 +28,8 @@ class PdfService {
               return _buildProfessionalGrayTemplate(cv);
             case TemplateType.minimal_modern:
               return _buildMinimalModernTemplate(cv);
+            case TemplateType.technical_col:
+              return _buildTechnicalColTemplate(cv);
             default:
               return _buildClassicTemplate(cv);
           }
@@ -312,14 +314,13 @@ class PdfService {
     );
   }
 
-  // 5. Minimal Modern Template (Based on user image "Sebastian Bennett")
+  // 5. Minimal Modern Template
   pw.Widget _buildMinimalModernTemplate(CVModel cv) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(40),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
-          // Header Center
           pw.Center(
             child: pw.Column(
               children: [
@@ -330,8 +331,6 @@ class PdfService {
             ),
           ),
           pw.SizedBox(height: 15),
-          
-          // Contact Row
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
             children: [
@@ -343,8 +342,6 @@ class PdfService {
           pw.SizedBox(height: 10),
           pw.Divider(thickness: 0.5, color: PdfColors.grey),
           pw.SizedBox(height: 20),
-
-          // About Me
           if (cv.summary.isNotEmpty) ...[
             pw.Text('ABOUT ME', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, letterSpacing: 1)),
             pw.SizedBox(height: 10),
@@ -353,8 +350,6 @@ class PdfService {
             pw.Divider(thickness: 0.5, color: PdfColors.grey),
             pw.SizedBox(height: 20),
           ],
-
-          // Education
           if (cv.educationList.isNotEmpty) ...[
             pw.Text('EDUCATION', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, letterSpacing: 1)),
             pw.SizedBox(height: 15),
@@ -372,18 +367,13 @@ class PdfService {
                   pw.SizedBox(height: 2),
                   pw.Text(e.degree, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
                   pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', // Placeholder description
-                    style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
-                  ),
+                  pw.Text('Lorem ipsum dolor sit amet, consectetur adipiscing elit.', style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800)),
                 ],
               ),
             )),
             pw.Divider(thickness: 0.5, color: PdfColors.grey),
             pw.SizedBox(height: 20),
           ],
-
-          // Experience
           if (cv.experienceList.isNotEmpty) ...[
             pw.Text('WORK EXPERIENCE', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, letterSpacing: 1)),
             pw.SizedBox(height: 15),
@@ -401,18 +391,13 @@ class PdfService {
                   pw.SizedBox(height: 2),
                   pw.Text(e.role, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
                   pw.SizedBox(height: 4),
-                  pw.Text(
-                    e.description.isEmpty ? 'Responsibility description goes here.' : e.description,
-                    style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800),
-                  ),
+                  pw.Text(e.description.isEmpty ? 'Responsibility description goes here.' : e.description, style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey800)),
                 ],
               ),
             )),
             pw.Divider(thickness: 0.5, color: PdfColors.grey),
             pw.SizedBox(height: 20),
           ],
-
-          // Skills
           if (cv.skills.isNotEmpty) ...[
             pw.Text('SKILLS', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, letterSpacing: 1)),
             pw.SizedBox(height: 10),
@@ -434,6 +419,123 @@ class PdfService {
           ],
         ],
       ),
+    );
+  }
+
+  // 6. Technical Column Template (Two Column Layout)
+  pw.Widget _buildTechnicalColTemplate(CVModel cv) {
+    pw.Widget sectionHeader(String text) {
+      return pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(text.toUpperCase(), style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+          pw.Divider(thickness: 2, color: PdfColors.black),
+          pw.SizedBox(height: 5),
+        ],
+      );
+    }
+
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        // Left Column (65%)
+        pw.Expanded(
+          flex: 65,
+          child: pw.Container(
+            padding: const pw.EdgeInsets.only(right: 20),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(cv.fullName.toUpperCase(), style: pw.TextStyle(fontSize: 28, fontWeight: pw.FontWeight.bold)),
+                pw.Text('iOS Swift Mobile App Developer', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#444444'))),
+                
+                pw.SizedBox(height: 10),
+                
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(cv.phone, style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text(cv.email, style: const pw.TextStyle(fontSize: 9)),
+                    pw.Text(cv.address, style: const pw.TextStyle(fontSize: 9)),
+                  ]
+                ),
+
+                pw.SizedBox(height: 20),
+
+                sectionHeader('Summary'),
+                pw.Text(cv.summary, style: const pw.TextStyle(fontSize: 10)),
+                pw.SizedBox(height: 15),
+
+                sectionHeader('Experience'),
+                ...cv.experienceList.map((e) => pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 12),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(e.role, style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(e.company, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#2980b9'))),
+                      pw.Text(e.duration, style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                      pw.SizedBox(height: 3),
+                      pw.Text(e.description, style: const pw.TextStyle(fontSize: 10)),
+                    ],
+                  ),
+                )),
+
+                pw.SizedBox(height: 15),
+                sectionHeader('Education'),
+                 ...cv.educationList.map((e) => pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 8),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(e.institution, style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(e.degree, style: const pw.TextStyle(fontSize: 10)),
+                      pw.Text(e.year, style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700)),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+        ),
+        
+        // Right Column (35%)
+        pw.Expanded(
+          flex: 35,
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.SizedBox(height: 80), // Offset for alignment
+              sectionHeader('Projects'),
+              // Placeholder projects logic
+              pw.Text('Open Source Fitness Tracker', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+              pw.Text('Contributed to developing new features for a community-driven fitness tracking app.', style: const pw.TextStyle(fontSize: 10)),
+              pw.SizedBox(height: 10),
+
+              sectionHeader('Achievements'),
+              pw.Text('App Store Top Chart', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+              pw.Text('Led development of educational app that reached top 10.', style: const pw.TextStyle(fontSize: 10)),
+              pw.SizedBox(height: 10),
+
+              sectionHeader('Skills'),
+              pw.Wrap(
+                runSpacing: 5,
+                children: cv.skills.map((s) => pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(horizontal: 0, vertical: 2),
+                  width: double.infinity,
+                  child: pw.Column(
+                     crossAxisAlignment: pw.CrossAxisAlignment.start,
+                     children: [
+                        pw.Text(s, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold)),
+                        pw.Container(height: 1, width: double.infinity, color: PdfColors.grey300)
+                     ]
+                  )
+                )).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
