@@ -6,6 +6,7 @@ import 'app/modules/home/views/home_view.dart';
 import 'app/modules/editor/views/editor_view.dart';
 import 'app/modules/editor/controllers/editor_controller.dart';
 import 'app/data/services/ad_service.dart';
+import 'core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,8 @@ void main() async {
   runApp(
     GetMaterialApp(
       title: "Bangla Smart CV Maker",
+      theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
       initialRoute: '/',
       getPages: [
         GetPage(name: '/', page: () => HomeView()),
