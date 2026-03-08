@@ -6,6 +6,8 @@ import '../../../data/models/cv_model.dart';
 import '../../../data/providers/pdf_service.dart';
 
 class EditorView extends GetView<EditorController> {
+  const EditorView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +81,7 @@ class EditorView extends GetView<EditorController> {
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,7 +209,7 @@ class EditorView extends GetView<EditorController> {
             runSpacing: 8,
             children: controller.skillsList.map((s) => Chip(
               label: Text(s),
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               labelStyle: TextStyle(color: Theme.of(context).primaryColor),
               onDeleted: () => controller.skillsList.remove(s),
             )).toList(),
@@ -227,7 +229,7 @@ class EditorView extends GetView<EditorController> {
           Text("Choose Template", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 20),
           
-          Container(
+          SizedBox(
             height: 200,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -243,7 +245,7 @@ class EditorView extends GetView<EditorController> {
                       width: 140,
                       margin: EdgeInsets.only(right: 16),
                       decoration: BoxDecoration(
-                        color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : Colors.white,
+                        color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.05) : Colors.white,
                         border: Border.all(
                           color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300, 
                           width: isSelected ? 2 : 1
@@ -346,13 +348,13 @@ class EditorView extends GetView<EditorController> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 5)],
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(Icons.history_edu, color: Theme.of(context).primaryColor),
           ),
           SizedBox(width: 15),
