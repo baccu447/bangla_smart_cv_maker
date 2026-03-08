@@ -41,7 +41,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -53,7 +53,7 @@ class _HomeViewState extends State<HomeView> {
                   children: [
                     SizedBox(height: 20),
                     // Hero Animation or Logo
-                    Container(
+                    SizedBox(
                       height: 250,
                       child: Lottie.network(
                         'https://assets9.lottiefiles.com/packages/lf20_u4jjb9bd.json', // Placeholder Resume Animation

@@ -19,7 +19,7 @@ class AppTheme {
         primary: primary,
         secondary: secondary,
         surface: surface,
-        background: background,
+        // background is deprecated, surface is used now for scaffold background often, but we can still set scaffoldBackgroundColor
         error: error,
       ),
       scaffoldBackgroundColor: background,
@@ -43,7 +43,7 @@ class AppTheme {
           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 4,
-          shadowColor: primary.withOpacity(0.4),
+          shadowColor: primary.withValues(alpha: 0.4), // Updated from withOpacity
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -55,10 +55,10 @@ class AppTheme {
         labelStyle: TextStyle(color: textSecondary),
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData( // Updated to CardThemeData
         color: surface,
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.05),
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 0),
       ),
