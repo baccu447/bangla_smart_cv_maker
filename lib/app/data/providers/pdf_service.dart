@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/cv_model.dart';
 
-enum TemplateType { classic, modern, creative, professional_gray, minimal_modern, technical_col }
+enum TemplateType { classic, modern, creative, professionalGray, minimalModern, technicalCol }
 
 class PdfService {
   Future<Uint8List> generatePdf(CVModel cv, {TemplateType template = TemplateType.modern}) async {
@@ -13,7 +13,7 @@ class PdfService {
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
-        margin: (template == TemplateType.modern || template == TemplateType.minimal_modern)
+        margin: (template == TemplateType.modern || template == TemplateType.minimalModern)
             ? pw.EdgeInsets.zero 
             : const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
@@ -24,14 +24,13 @@ class PdfService {
               return _buildModernTemplate(cv);
             case TemplateType.creative:
               return _buildCreativeTemplate(cv);
-            case TemplateType.professional_gray:
+            case TemplateType.professionalGray:
               return _buildProfessionalGrayTemplate(cv);
-            case TemplateType.minimal_modern:
+            case TemplateType.minimalModern:
               return _buildMinimalModernTemplate(cv);
-            case TemplateType.technical_col:
+            case TemplateType.technicalCol:
               return _buildTechnicalColTemplate(cv);
-            default:
-              return _buildClassicTemplate(cv);
+            // Default case removed as all cases are covered, preventing unreachable code warning.
           }
         },
       ),
@@ -422,7 +421,7 @@ class PdfService {
     );
   }
 
-  // 6. Technical Column Template (Two Column Layout)
+  // 6. Technical Column Template
   pw.Widget _buildTechnicalColTemplate(CVModel cv) {
     pw.Widget sectionHeader(String text) {
       return pw.Column(
