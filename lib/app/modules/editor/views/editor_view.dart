@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../controllers/editor_controller.dart';
 import '../../../data/models/cv_model.dart';
 import '../../../data/providers/pdf_service.dart';
@@ -8,110 +9,383 @@ class EditorView extends GetView<EditorController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('CV Editor')),
-      body: Obx(() => Stepper(
-        currentStep: controller.currentStep.value,
-        onStepContinue: () {
-          if (controller.currentStep.value < 3) {
-            controller.currentStep.value++;
-          } else {
-            controller.saveAndGeneratePDF();
-          }
-        },
-        onStepCancel: () {
-          if (controller.currentStep.value > 0) {
-            controller.currentStep.value--;
-          }
-        },
-        steps: [
-          Step(
-            title: Text('Personal'),
-            content: Column(
+      appBar: AppBar(
+        title: Text('Create Your CV', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Colors.black,
+      ),
+      body: Column(
+        children: [
+          // Custom Progress Indicator
+          Obx(() => _buildCustomStepper(context)),
+          
+          Expanded(
+            child: Obx(() => PageView(
+              controller: controller.pageController,
+              physics: NeverScrollableScrollPhysics(), // Disable swipe, use buttons
               children: [
-                TextField(controller: controller.fullNameController, decoration: InputDecoration(labelText: 'Full Name')),
-                TextField(controller: controller.emailController, decoration: InputDecoration(labelText: 'Email')),
-                TextField(controller: controller.phoneController, decoration: InputDecoration(labelText: 'Phone')),
-                TextField(controller: controller.summaryController, decoration: InputDecoration(labelText: 'Professional Summary'), maxLines: 3),
+                _buildPersonalStep(context),
+                _buildEducationStep(context),
+                _buildExperienceStep(context),
+                _buildSkillsStep(context),
+                _buildTemplateStep(context),
               ],
-            ),
-          ),
-          Step(
-            title: Text('Education & Experience'),
-            content: Column(
-              children: [
-                _buildSectionHeader('Education', () => _showAddEducationDialog(context)),
-                Obx(() => Column(
-                  children: controller.educationList.map((e) => ListTile(
-                    title: Text(e.institution),
-                    subtitle: Text('${e.degree} - ${e.year}'),
-                    trailing: IconButton(icon: Icon(Icons.delete), onPressed: () => controller.educationList.remove(e)),
-                  )).toList(),
-                )),
-                Divider(),
-                _buildSectionHeader('Experience', () => _showAddExperienceDialog(context)),
-                Obx(() => Column(
-                  children: controller.experienceList.map((e) => ListTile(
-                    title: Text(e.company),
-                    subtitle: Text(e.role),
-                    trailing: IconButton(icon: Icon(Icons.delete), onPressed: () => controller.experienceList.remove(e)),
-                  )).toList(),
-                )),
-              ],
-            ),
-          ),
-          Step(
-            title: Text('Skills'),
-            content: Column(
-              children: [
-                TextField(
-                  decoration: InputDecoration(labelText: 'Skills (comma separated)'),
-                  onChanged: (val) {
-                    controller.skillsList.assignAll(val.split(',').map((e) => e.trim()).toList());
-                  },
-                ),
-              ],
-            ),
-          ),
-          Step(
-            title: Text('Template & Finalize'),
-            content: Column(
-              children: [
-                Text('Select a Template:', style: TextStyle(fontWeight: FontWeight.bold)),
-                SizedBox(height: 10),
-                Obx(() => DropdownButton<TemplateType>(
-                  value: controller.selectedTemplate.value,
-                  items: TemplateType.values.map((TemplateType type) {
-                    return DropdownMenuItem<TemplateType>(
-                      value: type,
-                      child: Text(type.toString().split('.').last.toUpperCase()),
-                    );
-                  }).toList(),
-                  onChanged: (TemplateType? newValue) {
-                    if (newValue != null) {
-                      controller.selectedTemplate.value = newValue;
-                    }
-                  },
-                )),
-                SizedBox(height: 20),
-                Text('Ready to generate PDF?'),
-              ],
-            ),
+            )),
           ),
         ],
-      )),
+      ),
+      bottomNavigationBar: _buildBottomNav(context),
     );
   }
 
-  Widget _buildSectionHeader(String title, VoidCallback onAdd) {
+  Widget _buildCustomStepper(BuildContext context) {
+    final steps = ["Info", "Edu", "Exp", "Skill", "Finish"];
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(steps.length, (index) {
+          bool isActive = controller.currentStep.value >= index;
+          bool isCurrent = controller.currentStep.value == index;
+          return Column(
+            children: [
+              AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                width: 30, height: 30,
+                decoration: BoxDecoration(
+                  color: isActive ? Theme.of(context).primaryColor : Colors.grey.shade200,
+                  shape: BoxShape.circle,
+                  border: isCurrent ? Border.all(color: Theme.of(context).primaryColor, width: 2) : null,
+                ),
+                child: Center(
+                  child: isActive 
+                    ? Icon(Icons.check, size: 16, color: Colors.white)
+                    : Text('${index + 1}', style: TextStyle(color: Colors.grey.shade600)),
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(steps[index], style: TextStyle(fontSize: 10, fontWeight: isActive ? FontWeight.bold : FontWeight.normal, color: isActive ? Theme.of(context).primaryColor : Colors.grey)),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildBottomNav(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Obx(() => controller.currentStep.value > 0 
+            ? TextButton.icon(
+                onPressed: controller.previousStep,
+                icon: Icon(Icons.arrow_back),
+                label: Text("Back"),
+              ) 
+            : SizedBox.shrink()),
+          
+          Obx(() => ElevatedButton.icon(
+            onPressed: controller.nextStep,
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            icon: Icon(controller.currentStep.value == 4 ? Icons.download : Icons.arrow_forward),
+            label: Text(controller.currentStep.value == 4 ? "Generate PDF" : "Next"),
+          )),
+        ],
+      ),
+    );
+  }
+
+  // Step 1: Personal Info
+  Widget _buildPersonalStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Personal Details", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          Text("Let's start with the basics.", style: TextStyle(color: Colors.grey)),
+          SizedBox(height: 20),
+          _buildTextField(controller.fullNameController, "Full Name", Icons.person),
+          SizedBox(height: 15),
+          _buildTextField(controller.emailController, "Email Address", Icons.email, type: TextInputType.emailAddress),
+          SizedBox(height: 15),
+          _buildTextField(controller.phoneController, "Phone Number", Icons.phone, type: TextInputType.phone),
+          SizedBox(height: 15),
+          _buildTextField(controller.summaryController, "Professional Summary", Icons.description, maxLines: 4),
+        ],
+      ),
+    );
+  }
+
+  // Step 2: Education
+  Widget _buildEducationStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(context, "Education", "Add your academic background", () => _showAddEducationDialog(context)),
+          SizedBox(height: 20),
+          Obx(() => controller.educationList.isEmpty 
+            ? _buildEmptyState("No education added yet.")
+            : Column(
+                children: controller.educationList.map((e) => _buildItemCard(
+                  context, 
+                  title: e.institution, 
+                  subtitle: "${e.degree} • ${e.year}", 
+                  onDelete: () => controller.educationList.remove(e)
+                )).toList(),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Step 3: Experience
+  Widget _buildExperienceStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(context, "Experience", "Add your work history", () => _showAddExperienceDialog(context)),
+          SizedBox(height: 20),
+          Obx(() => controller.experienceList.isEmpty 
+            ? _buildEmptyState("No experience added yet.")
+            : Column(
+                children: controller.experienceList.map((e) => _buildItemCard(
+                  context, 
+                  title: e.role, 
+                  subtitle: "${e.company} • ${e.duration}", 
+                  onDelete: () => controller.experienceList.remove(e)
+                )).toList(),
+              )
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Step 4: Skills
+  Widget _buildSkillsStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Skills", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          Text("List your top skills (comma separated).", style: TextStyle(color: Colors.grey)),
+          SizedBox(height: 20),
+          
+          TextField(
+            decoration: InputDecoration(
+              labelText: "E.g. Flutter, Laravel, Teamwork",
+              prefixIcon: Icon(Icons.stars),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onChanged: (val) {
+               controller.skillsList.assignAll(val.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList());
+            },
+          ),
+          SizedBox(height: 20),
+          Obx(() => Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: controller.skillsList.map((s) => Chip(
+              label: Text(s),
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              labelStyle: TextStyle(color: Theme.of(context).primaryColor),
+              onDeleted: () => controller.skillsList.remove(s),
+            )).toList(),
+          )),
+        ],
+      ),
+    );
+  }
+
+  // Step 5: Template & Preview
+  Widget _buildTemplateStep(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Choose Template", style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 20),
+          
+          Container(
+            height: 200,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: TemplateType.values.length,
+              itemBuilder: (context, index) {
+                final type = TemplateType.values[index];
+                return Obx(() {
+                  bool isSelected = controller.selectedTemplate.value == type;
+                  return GestureDetector(
+                    onTap: () => controller.selectedTemplate.value = type,
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 200),
+                      width: 140,
+                      margin: EdgeInsets.only(right: 16),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : Colors.white,
+                        border: Border.all(
+                          color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300, 
+                          width: isSelected ? 2 : 1
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.description, size: 50, color: isSelected ? Theme.of(context).primaryColor : Colors.grey),
+                          SizedBox(height: 10),
+                          Text(
+                            type.toString().split('.').last.toUpperCase(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? Theme.of(context).primaryColor : Colors.black87
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          if (isSelected) 
+                            Icon(Icons.check_circle, color: Theme.of(context).primaryColor, size: 20)
+                        ],
+                      ),
+                    ),
+                  );
+                });
+              },
+            ),
+          ),
+          
+          SizedBox(height: 30),
+          
+          Center(
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue),
+                  SizedBox(width: 10),
+                  Expanded(child: Text("Your PDF will be generated with the selected template style.", style: TextStyle(color: Colors.blue.shade800))),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Helpers ---
+
+  Widget _buildTextField(TextEditingController ctrl, String label, IconData icon, {TextInputType type = TextInputType.text, int maxLines = 1}) {
+    return TextField(
+      controller: ctrl,
+      keyboardType: type,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        alignLabelWithHint: maxLines > 1,
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title, String subtitle, VoidCallback onAdd) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        IconButton(icon: Icon(Icons.add_circle), onPressed: onAdd),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(subtitle, style: TextStyle(color: Colors.grey, fontSize: 12)),
+          ],
+        ),
+        ElevatedButton.icon(
+          onPressed: onAdd,
+          icon: Icon(Icons.add, size: 18),
+          label: Text("Add"),
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            backgroundColor: Colors.black, // Dark accent
+            foregroundColor: Colors.white,
+          ),
+        ),
       ],
     );
   }
 
+  Widget _buildItemCard(BuildContext context, {required String title, required String subtitle, required VoidCallback onDelete}) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 5)],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(Icons.history_edu, color: Theme.of(context).primaryColor),
+          ),
+          SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(subtitle, style: TextStyle(color: Colors.grey.shade600)),
+              ],
+            ),
+          ),
+          IconButton(icon: Icon(Icons.delete_outline, color: Colors.red), onPressed: onDelete),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String text) {
+    return Container(
+      padding: EdgeInsets.all(30),
+      alignment: Alignment.center,
+      child: Column(
+        children: [
+          Icon(Icons.hourglass_empty, size: 40, color: Colors.grey.shade300),
+          SizedBox(height: 10),
+          Text(text, style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  // Dialogs (Same logic, improved UI)
   void _showAddEducationDialog(BuildContext context) {
     final institutionController = TextEditingController();
     final degreeController = TextEditingController();
@@ -119,22 +393,32 @@ class EditorView extends GetView<EditorController> {
     
     Get.defaultDialog(
       title: 'Add Education',
-      content: Column(
-        children: [
-          TextField(controller: institutionController, decoration: InputDecoration(labelText: 'Institution')),
-          TextField(controller: degreeController, decoration: InputDecoration(labelText: 'Degree')),
-          TextField(controller: yearController, decoration: InputDecoration(labelText: 'Year')),
-        ],
+      titleStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildTextField(institutionController, "Institution", Icons.school),
+            SizedBox(height: 10),
+            _buildTextField(degreeController, "Degree", Icons.workspace_premium),
+            SizedBox(height: 10),
+            _buildTextField(yearController, "Year (e.g. 2020-2024)", Icons.calendar_today),
+          ],
+        ),
       ),
-      textConfirm: 'Add',
-      onConfirm: () {
-        controller.educationList.add(Education(
-          institution: institutionController.text,
-          degree: degreeController.text,
-          year: yearController.text,
-        ));
-        Get.back();
-      },
+      confirm: ElevatedButton(
+        onPressed: () {
+          if (institutionController.text.isNotEmpty) {
+            controller.educationList.add(Education(
+              institution: institutionController.text,
+              degree: degreeController.text,
+              year: yearController.text,
+            ));
+            Get.back();
+          }
+        },
+        child: Text("Add"),
+      ),
     );
   }
 
@@ -145,22 +429,32 @@ class EditorView extends GetView<EditorController> {
     
     Get.defaultDialog(
       title: 'Add Experience',
-      content: Column(
-        children: [
-          TextField(controller: companyController, decoration: InputDecoration(labelText: 'Company')),
-          TextField(controller: roleController, decoration: InputDecoration(labelText: 'Role')),
-          TextField(controller: durationController, decoration: InputDecoration(labelText: 'Duration')),
-        ],
+      titleStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+      content: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildTextField(companyController, "Company", Icons.business),
+            SizedBox(height: 10),
+            _buildTextField(roleController, "Role", Icons.badge),
+            SizedBox(height: 10),
+            _buildTextField(durationController, "Duration (e.g. 2 Years)", Icons.timelapse),
+          ],
+        ),
       ),
-      textConfirm: 'Add',
-      onConfirm: () {
-        controller.experienceList.add(Experience(
-          company: companyController.text,
-          role: roleController.text,
-          duration: durationController.text,
-        ));
-        Get.back();
-      },
+      confirm: ElevatedButton(
+        onPressed: () {
+          if (companyController.text.isNotEmpty) {
+            controller.experienceList.add(Experience(
+              company: companyController.text,
+              role: roleController.text,
+              duration: durationController.text,
+            ));
+            Get.back();
+          }
+        },
+        child: Text("Add"),
+      ),
     );
   }
 }

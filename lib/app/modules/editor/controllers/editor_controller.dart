@@ -16,6 +16,8 @@ class EditorController extends GetxController {
   final skillsList = <String>[].obs;
 
   final currentStep = 0.obs;
+  final pageController = PageController();
+
   final selectedTemplate = TemplateType.modern.obs; // Default to Modern
 
   final PdfService _pdfService = PdfService();
@@ -24,6 +26,22 @@ class EditorController extends GetxController {
   void onInit() {
     super.onInit();
     Get.find<AdService>().loadInterstitial();
+  }
+
+  void nextStep() {
+    if (currentStep.value < 4) {
+      currentStep.value++;
+      pageController.animateToPage(currentStep.value, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+    } else {
+      saveAndGeneratePDF();
+    }
+  }
+
+  void previousStep() {
+    if (currentStep.value > 0) {
+      currentStep.value--;
+      pageController.animateToPage(currentStep.value, duration: Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
   }
 
   void addEducation() {
