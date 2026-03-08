@@ -4,7 +4,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../models/cv_model.dart';
 
-enum TemplateType { classic, modern, creative }
+enum TemplateType { classic, modern, creative, professional_gray }
 
 class PdfService {
   Future<Uint8List> generatePdf(CVModel cv, {TemplateType template = TemplateType.modern}) async {
@@ -13,7 +13,9 @@ class PdfService {
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
-        margin: template == TemplateType.modern ? pw.EdgeInsets.zero : const pw.EdgeInsets.all(32),
+        margin: template == TemplateType.modern 
+            ? pw.EdgeInsets.zero 
+            : const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           switch (template) {
             case TemplateType.classic:
@@ -22,6 +24,8 @@ class PdfService {
               return _buildModernTemplate(cv);
             case TemplateType.creative:
               return _buildCreativeTemplate(cv);
+            case TemplateType.professional_gray:
+              return _buildProfessionalGrayTemplate(cv);
             default:
               return _buildClassicTemplate(cv);
           }
@@ -36,7 +40,10 @@ class PdfService {
     return pdf.save();
   }
 
-  // 1. Classic Template (Clean, Simple, Black & White)
+  // ... (Existing templates: Classic, Modern, Creative) ...
+  // Re-adding existing templates because write overwrites the file.
+
+  // 1. Classic Template
   pw.Widget _buildClassicTemplate(CVModel cv) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -76,7 +83,7 @@ class PdfService {
     );
   }
 
-  // 2. Modern Template (Sidebar, Blue Accent, Professional)
+  // 2. Modern Template
   pw.Widget _buildModernTemplate(CVModel cv) {
     final accentColor = PdfColor.fromHex('#2c3e50');
     final sidebarColor = PdfColor.fromHex('#ecf0f1');
@@ -84,7 +91,6 @@ class PdfService {
     return pw.Row(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        // Sidebar (30%)
         pw.Expanded(
           flex: 3,
           child: pw.Container(
@@ -114,7 +120,6 @@ class PdfService {
             ),
           ),
         ),
-        // Main Content (70%)
         pw.Expanded(
           flex: 7,
           child: pw.Container(
@@ -126,14 +131,12 @@ class PdfService {
                 pw.SizedBox(height: 5),
                 pw.Text('PROFESSIONAL', style: pw.TextStyle(fontSize: 14, letterSpacing: 2, color: PdfColors.grey)),
                 pw.SizedBox(height: 20),
-
                 if (cv.summary.isNotEmpty) ...[
                   pw.Text('PROFILE', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: accentColor)),
                   pw.Container(width: 30, height: 2, color: accentColor, margin: const pw.EdgeInsets.only(top: 2, bottom: 5)),
                   pw.Text(cv.summary),
                   pw.SizedBox(height: 15),
                 ],
-
                 if (cv.experienceList.isNotEmpty) ...[
                   pw.Text('WORK EXPERIENCE', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: accentColor)),
                   pw.Container(width: 30, height: 2, color: accentColor, margin: const pw.EdgeInsets.only(top: 2, bottom: 5)),
@@ -156,7 +159,6 @@ class PdfService {
                   )),
                   pw.SizedBox(height: 15),
                 ],
-
                 if (cv.educationList.isNotEmpty) ...[
                   pw.Text('EDUCATION', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: accentColor)),
                   pw.Container(width: 30, height: 2, color: accentColor, margin: const pw.EdgeInsets.only(top: 2, bottom: 5)),
@@ -185,8 +187,130 @@ class PdfService {
     );
   }
 
-  // 3. Creative Template (Placeholder)
+  // 3. Creative Template
   pw.Widget _buildCreativeTemplate(CVModel cv) {
-    return _buildModernTemplate(cv); // Reuse for now, can be customized later
+    return _buildModernTemplate(cv);
+  }
+
+  // 4. Professional Gray Template (New!)
+  pw.Widget _buildProfessionalGrayTemplate(CVModel cv) {
+    final headerBoxColor = PdfColor.fromHex('#e6e8eb'); // Light gray box
+    final textColor = PdfColors.black;
+
+    pw.Widget sectionHeader(String title) {
+      return pw.Container(
+        margin: const pw.EdgeInsets.only(bottom: 10),
+        child: pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.center,
+          children: [
+            pw.Container(
+              color: headerBoxColor,
+              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              child: pw.Text(
+                title.toUpperCase(),
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold, letterSpacing: 1),
+              ),
+            ),
+            pw.Expanded(
+              child: pw.Container(
+                height: 1,
+                color: PdfColors.black,
+              ),
+            )
+          ],
+        ),
+      );
+    }
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        // Name & Role
+        pw.Text(cv.fullName.toUpperCase(), style: pw.TextStyle(fontSize: 30, fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 4),
+        pw.Text('Software Engineer', style: pw.TextStyle(fontSize: 14)), // Placeholder role if not in model
+
+        pw.SizedBox(height: 15),
+
+        // Contact Bar
+        pw.Container(
+          color: headerBoxColor,
+          padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+          child: pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+            children: [
+              pw.Text(cv.phone),
+              pw.Text(cv.address), // Placeholder
+              pw.Text(cv.email),
+            ],
+          ),
+        ),
+
+        pw.SizedBox(height: 20),
+
+        // About Me
+        if (cv.summary.isNotEmpty) ...[
+          sectionHeader('About Me'),
+          pw.Text(cv.summary),
+          pw.SizedBox(height: 15),
+        ],
+
+        // Education
+        if (cv.educationList.isNotEmpty) ...[
+          sectionHeader('Education'),
+          ...cv.educationList.map((e) => pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 8),
+            child: pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text(e.institution.toUpperCase(), style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text(e.degree, style: const pw.TextStyle(color: PdfColors.grey800)),
+                  ],
+                ),
+                pw.Text(e.year),
+              ],
+            ),
+          )),
+          pw.SizedBox(height: 15),
+        ],
+
+        // Skills
+        if (cv.skills.isNotEmpty) ...[
+          sectionHeader('Skill'),
+          pw.Wrap(
+            spacing: 20,
+            runSpacing: 5,
+            children: cv.skills.map((s) => pw.Bullet(text: s)).toList(),
+          ),
+          pw.SizedBox(height: 15),
+        ],
+
+        // Work Experience
+        if (cv.experienceList.isNotEmpty) ...[
+          sectionHeader('Work Experience'),
+          ...cv.experienceList.map((e) => pw.Container(
+            margin: const pw.EdgeInsets.only(bottom: 12),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('${e.company} - ${e.role}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.Text(e.duration, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ],
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(e.description),
+              ],
+            ),
+          )),
+        ],
+      ],
+    );
   }
 }
